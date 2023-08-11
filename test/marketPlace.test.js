@@ -49,7 +49,6 @@ describe ("NFT marketplace",()=>{
 
     describe("Making marketPlace item",async()=>{
         let price = 1;
-        let result;
         beforeEach(async()=>{
             await nft.connect(addr1).mint(URI);
             await nft.connect(addr1).setApprovalForAll(marketplace,true);
@@ -73,5 +72,50 @@ describe ("NFT marketplace",()=>{
             ).to.be.revertedWith("Price must be greater than zero");
           })
     })
+    describe("Purchasing marketPlace item",()=>{
+        let price = 2;
+        let fee = (feePercent/100)*price;
+        let totalPriceInWei;
+        beforeEach(async()=>{
+            await nft.connect(addr1).mint(URI);
+            await nft.connect(addr1).setApprovalForAll(marketplace,true);
+            await marketplace.connect(addr1).makeItem(nft,1,toWei(price));
+        })
+        it("Should update item as sold, pay seller, transfer NFT to buyer, charge fees and emit a Bought event",async()=>{
+            const sellerInitBalEth = await addr1.balance;
+            const feeAccountInitBalEth = await deployer.balance;
 
+            totalPriceInWei = await marketplace.getTotalPrice(1);
+            expect(await marketplace.connect(addr2).purchaseItem(1,{value : totalPriceInWei}))
+            .to.emit(marketplace,"Bought")
+            .withArgs( 1,nft.address, 1, toWei(price),addr1.address,addr2.address)
+
+            const sellerFinalBalEth = await addr1.balance;
+            const feeAccountFinalBalEth = await deployer.balance;
+            
+            expect((await marketplace.items(1)).sold).to.equal(true);
+        })
+        it("Should fail for invalid item ids, sold items and when not enough ether is paid", async function () {
+            // fails for invalid item ids
+            await expect(
+              marketplace.connect(addr2).purchaseItem(2, {value: totalPriceInWei})
+            ).to.be.revertedWith("item doesn't exist");
+            await expect(
+              marketplace.connect(addr2).purchaseItem(0, {value: totalPriceInWei})
+            ).to.be.revertedWith("item doesn't exist");
+            // Fails when not enough ether is paid with the transaction. 
+            // In this instance, fails when buyer only sends enough ether to cover the price of the nft
+            // not the additional market fee.
+            await expect(
+              marketplace.connect(addr2).purchaseItem(1, {value: toWei(price)})
+            ).to.be.revertedWith("not enough ether to cover item price and market fee"); 
+            // addr2 purchases item 1
+            await marketplace.connect(addr2).purchaseItem(1, {value: totalPriceInWei})
+            // addr3 tries purchasing item 1 after its been sold 
+            const addr3 = addrs[0]
+            await expect(
+              marketplace.connect(addr3).purchaseItem(1, {value: totalPriceInWei})
+            ).to.be.revertedWith("item already sold");
+          });
+    })
 })
