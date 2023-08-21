@@ -34,7 +34,7 @@
     }
   }
   
-  @media screen and (max-width: 590px){
+  @media screen and (max-width: 600px){
     .navbar_links{
         flex-direction: column;
     }
