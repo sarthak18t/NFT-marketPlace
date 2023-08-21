@@ -8,15 +8,19 @@ import MyPurchases from "./components/MyPurchases";
 import { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Loader from "./components/Loader";
-import { useConnect, useAccount } from "wagmi";
-import "@rainbow-me/rainbowkit/styles.css";
+import { useAccount } from "wagmi";
 
+import "@rainbow-me/rainbowkit/styles.css";
 function App() {
   const [loading, setLoading] = useState(true);
+  const [connected,setConnected] = useState(false);
   const { isConnected } = useAccount();
   useEffect(() => {
-    if (isConnected) setLoading(false);
-  }, []);
+    setConnected(isConnected);
+    if (connected) setLoading(false);
+
+  }, [connected]);
+  
   return (
     <BrowserRouter>
       <div className="App">
@@ -26,7 +30,7 @@ function App() {
         ) : (
           <div>
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<Home/>} />
               <Route path="/create" element={<Create />} />
               <Route path="/my-listed-items" element={<MyListedItems />} />
               <Route path="/mypurchases" element={<MyPurchases />} />
