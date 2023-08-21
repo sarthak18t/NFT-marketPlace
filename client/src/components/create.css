@@ -1,0 +1,49 @@
+.create{
+    display: flex;
+    margin-top: 35px;
+    justify-content: center;
+}
+.upload-img{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.form {
+    max-width: 400px;
+    padding: 20px;
+    border: 1px solid black;
+    border-radius: 5px;
+    background-color: #f7f7f7;
+  }
+  .choose {
+    font-size: 16px;
+    font-weight: 300;
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+
+  
+  input[type="text"],
+  input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  .upload {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .upload:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
