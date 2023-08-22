@@ -15,36 +15,51 @@ const Home = () => {
       abi: MarketPlace.abi,
       functionName: "itemCount",
     });
-    console.log(itemcount);
+
     let items = [];
     for (var i = 1; i <= itemcount; i++) {
+      console.log('1')
       const item = await readContract({
         address: MarketPlace_add.address,
         abi: MarketPlace.abi,
         functionName: "items",
+        args : [i],
       });
+      console.log('2')
       if(!item.sold){
+        const tokenID = item[2];
+        console.log(tokenID,"sd")
         const uri = await readContract({
           address : NFT_add.address,
           abi : NFT.abi,
-          args : [item.tokenId],
+          functionName : "tokenURI",
+          args : [tokenID],
         })
-        const response = await fetch(uri);
-        const metadata = await response.json();
+        console.log('3')
+        console.log(uri)
+        // const response = await fetch(uri);
+        // console.log(response)
+        // console.log('4')
+        // console.log(item[0])
+  
+        // const metadata = await response.json();
+        // console.log(metadata)
         const totalprice = await readContract({
           address: MarketPlace_add.address,
           abi: MarketPlace.abi,
           functionName: "getTotalPrice", 
-          args :[item.itemId],
+          args :[item[0]],
         })
+        console.log('5')
         items.push({
           totalprice,
           itemId: item.itemId,
           seller: item.seller,
-          name: metadata.name,
-          description: metadata.description,
-          image: metadata.image
+          // name: metadata.name,
+          // description: metadata.description,
+          // image: metadata.image
         })
+        console.log('6')
       }
     }
     setItems(items);

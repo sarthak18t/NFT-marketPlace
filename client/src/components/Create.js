@@ -15,6 +15,7 @@ const Create = () => {
   const [name,setName] = useState('');
 
   const uploadToIpfs = async()=>{
+    console.log(file);
       if(file){
         try {
           const formData = new FormData();
@@ -33,7 +34,6 @@ const Create = () => {
             const ImgHash = `https://gateway.pinata.cloud/ipfs/${resFile.data.IpfsHash}`;
             setImage(ImgHash);
             alert("Successfully image uploaded");
-            setFile(null);
           }
           else{
             throw new Error("Invalid response data format");
@@ -51,41 +51,44 @@ const Create = () => {
     reader.onloadend = () => {
       setFile(e.target.files[0]);
     };
-    console.log(file);
-    uploadToIpfs();
+    e.preventDefault();
   };
 
-  const createNFT = async()=>{
+  const createNFT = async(e)=>{
+    e.preventDefault();
     try {
+      console.log('0')
       const uri = image;
+      console.log('1')
       const {hash} = await writeContract({
           address : NFT_add.address,
           abi : NFT.abi,
-          funtionName : "mint",
+          functionName : "mint",
           args : [uri],
       })
-      await hash.wait();
+      console.log('2')
       const id = await readContract({
         address : NFT_add.address,
         abi : NFT.abi,
-        funtionName : "tokenId", 
+        functionName : "tokenId", 
       })
+      console.log('3')
       const {hash : secondHash} = await writeContract({
         address : NFT_add.address,
         abi : NFT.abi,
-        funtionName : "setApprovalForAll",
+        functionName : "setApprovalForAll",
         args : [MarketPlace_add.address,true],  
       })
-      await secondHash.wait();
-
+      console.log('4')
       const listingPrice = ethers.parseEther(price);
+      console.log('5')
       const {hash:thirdHash} = await writeContract({
         address : MarketPlace_add.address,
         abi : MarketPlace.abi,
         functionName : 'makeItem',
-        args : [NFT,id,listingPrice]
+        args : [NFT_add.address,id,listingPrice]
       })
-      await thirdHash.wait()
+      console.log('6')
     } catch (error) {
       alert('ipfs uri upload error');
       console.log(error);
@@ -111,6 +114,9 @@ const Create = () => {
           onChange={(e)=>setName(e.target.value)}
           placeholder='name'
         ></input>
+         <button type="button" className="upload" disabled={!file} onClick={uploadToIpfs}>
+          Upload to IPFS
+        </button>
          <input
           type="text"
           required
@@ -123,7 +129,7 @@ const Create = () => {
           onChange={(e)=>setPrice(e.target.value)}
           placeholder='price in ETH'
         ></input>
-        <button type="submit" className="upload" disabled={!file} onClick={createNFT}>
+        <button className="upload" disabled={!file} onClick={createNFT}>
           Create and List NFT
         </button>
       </form>
